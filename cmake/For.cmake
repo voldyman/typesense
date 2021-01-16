@@ -16,6 +16,10 @@ endif()
 
 if(NOT EXISTS ${DEP_ROOT_DIR}/${FOR_NAME}/libfor.a AND BUILD_DEPS STREQUAL "yes")
     message("Building libfor locally...")
+
+    set(ENV{CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER})
+    set(ENV{CMAKE_C_COMPILER} ${CMAKE_C_COMPILER})
+
     execute_process(COMMAND make WORKING_DIRECTORY ${DEP_ROOT_DIR}/${FOR_NAME}/
                     RESULT_VARIABLE FOR_BUILD)
     if(NOT FOR_BUILD EQUAL 0)

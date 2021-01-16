@@ -2,7 +2,7 @@
 #include <string.h>
 #include <strings.h>
 #include <stdio.h>
-#include <emmintrin.h>
+#include <sse_intrin.h>
 #include <assert.h>
 #include <art.h>
 #include <functional>

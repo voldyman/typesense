@@ -20,16 +20,41 @@ endif()
 add_definitions(-DSNAPPY)
 
 if (APPLE)
+    function (homebrew_path)
+        cmake_parse_arguments(PARG "" "PKG;DEFAULT;OUT" "" ${ARGN})
+        execute_process(
+            COMMAND brew --prefix ${PARG_PKG}
+            OUTPUT_VARIABLE OUT_PATH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if (EXISTS ${OUT_PATH})
+            set(${PARG_OUT} ${OUT_PATH} PARENT_SCOPE)
+        else()
+            set(${PARG_OUT} ${DEFAULT} PARENT_SCOPE)
+        endif()
+    endfunction(homebrew_path)
+
+    if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64")
+        add_definitions(-DSSE_NEON)
+    endif()
+
     add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
     add_definitions(-D__GLIBCXX__)
 
     # Prefer brew installated libraries
-    set(OPENSSL_ROOT_DIR /usr/local/opt/openssl@1.1)
-    set(ENV{OPENSSL_ROOT_DIR} /usr/local/opt/openssl@1.1)
+    homebrew_path(PKG "openssl" DEFAULT "/usr/local/opt/openssl@1.1" OUT BREW_OPEN_SSL_ROOT)
+    set(OPENSSL_ROOT_DIR ${BREW_OPEN_SSL_ROOT})
+    set(ENV{OPENSSL_ROOT_DIR} ${BREW_OPEN_SSL_ROOT})
 
-    set(SNAPPY_ROOT_DIR /usr/local/opt/snappy)
-    set(ZLIB_ROOT /usr/local/opt/zlib)
-    set(CMAKE_PREFIX_PATH /usr/local/opt/curl-openssl /usr/local/opt/icu4c)
+    homebrew_path(PKG "snappy" DEFAULT "/usr/local/opt/snappy" OUT BREW_SNAPPY_ROOT)
+    set(SNAPPY_ROOT_DIR ${BREW_SNAPPY_ROOT})
+
+    homebrew_path(PKG "zlib" DEFAULT "/usr/local/opt/zlib" OUT BREW_ZLIB_ROOT)
+    set(ZLIB_ROOT ${BREW_ZLIB_ROOT})
+
+    homebrew_path(PKG "curl-openssl" DEFAULT "/usr/local/opt/curl-openssl" OUT BREW_CURL_ROOT)
+    homebrew_path(PKG "icu4c" DEFAULT "/usr/local/opt/icu4c" OUT BREW_ICU4C_ROOT)
+    set(CMAKE_PREFIX_PATH ${BREW_CURL_ROOT} ${BREW_ICU4C_ROOT})
 endif (APPLE)
 
 # Ensure that we only use the static versions of libraries to link against
@@ -41,6 +66,7 @@ ELSE()
     set(ENV{CMAKE_FIND_LIBRARY_SUFFIXES} ".a")
 ENDIF()
 
+include(cmake/brpc.cmake)
 include(cmake/For.cmake)
 include(cmake/H2O.cmake)
 include(cmake/RocksDB.cmake)

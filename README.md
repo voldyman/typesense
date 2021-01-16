@@ -288,6 +288,8 @@ Typesense requires the following dependencies:
 
 ```
 ./build.sh --create-binary [--clean] [--depclean]
+# for using llvm
+CXX=$(brew --prefix llvm)/bin/clang++ CC=$(brew --prefix llvm)/bin/clang ./build.sh
 ```
 
 The first build will take some time since other third-party libraries are pulled and built as part of the build process.
